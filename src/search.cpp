@@ -235,6 +235,17 @@ void Search::Worker::start_searching() {
         && rootMoves[0].pv[0] != Move::none())
         bestThread = threads.get_best_thread()->worker.get();
 
+    // Barnes Opening: intentionally select f3 (f2-f3) as the worst move for White when available,
+    // overriding the search result to always play the Barnes Opening from White's side.
+    if (rootPos.side_to_move() == WHITE)
+    {
+        Move barnesMove = Move(SQ_F2, SQ_F3);
+        auto barnesIt =
+          std::find(bestThread->rootMoves.begin(), bestThread->rootMoves.end(), barnesMove);
+        if (barnesIt != bestThread->rootMoves.end())
+            std::swap(bestThread->rootMoves[0], *barnesIt);
+    }
+
     main_manager()->bestPreviousScore        = bestThread->rootMoves[0].score;
     main_manager()->bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
 
